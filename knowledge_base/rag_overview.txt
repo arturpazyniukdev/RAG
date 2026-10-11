@@ -1,0 +1,8 @@
+What is RAG
+
+Retrieval-Augmented Generation combines a search step with a language model.
+Pipeline:  load documents -> clean -> chunk -> embed -> store in a vector index -> retrieve -> generate.
+
+
+
+Chunking splits long documents into pieces small enough to embed and retrieve precisely.

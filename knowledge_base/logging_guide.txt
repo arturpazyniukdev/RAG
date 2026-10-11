@@ -1,0 +1,8 @@
+Logging in Python
+
+Use logging.getLogger(__name__) in each module, never the root logger directly.
+Configure once in main with logging.basicConfig(level=..., format=...).
+
+
+Levels: DEBUG < INFO < WARNING < ERROR < CRITICAL.
+   Prefer logger.info("x=%s", x) over f-strings so formatting is lazy.

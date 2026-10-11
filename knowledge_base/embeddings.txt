@@ -1,0 +1,7 @@
+Embeddings
+
+An embedding is a vector of floats representing the meaning of a text.
+Similar texts have vectors with high cosine similarity.
+
+Typical sizes: 384, 768, 1536 dimensions.
+   Store vectors with their source chunk id so retrieval can return the original text.

@@ -1,0 +1,7 @@
+Vector search
+
+Nearest-neighbour search finds the k vectors closest to a query vector.
+Brute force is O(n) per query and is fine for a few thousand chunks.
+
+
+Libraries: faiss, hnswlib, sqlite with a vector extension, or plain numpy for small data.

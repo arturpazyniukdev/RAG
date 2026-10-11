@@ -1,0 +1,11 @@
+Python asyncio   basics
+
+
+asyncio is a library to write concurrent code using the async/await syntax.
+An event loop runs coroutines   and switches between them at await points.
+
+   Use asyncio.gather to run several coroutines concurrently.
+Blocking calls (time.sleep, requests.get) freeze the loop; use await asyncio.sleep
+and an async HTTP client instead.
+
+

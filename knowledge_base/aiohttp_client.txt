@@ -1,0 +1,9 @@
+aiohttp client guide
+
+aiohttp provides an async HTTP client and server.
+Create one ClientSession per application  and reuse it;   creating a session per request is slow.
+
+    Use "async with session.get(url) as resp:" and read the body with await resp.text().
+Set a timeout with aiohttp.ClientTimeout(total=10).
+
+Raise for bad status with resp.raise_for_status().

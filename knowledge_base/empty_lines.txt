@@ -1,0 +1,10 @@
+
+
+
+This file starts and ends with blank lines.
+
+It exists to test cleaning.
+	Tabs	and	trailing spaces   
+
+
+

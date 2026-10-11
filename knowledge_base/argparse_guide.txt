@@ -1,0 +1,7 @@
+argparse  cheatsheet
+
+ArgumentParser(description=...) builds a CLI.
+add_argument("--path", default="knowledge_base") adds an option.
+add_argument("--verbose", action="store_true") adds a flag.
+
+parse_args() returns a Namespace;   access values as attributes.
