@@ -1,10 +1,13 @@
 import argparse
+import asyncio
 import logging
 from collections import Counter
 from pathlib import Path
 
 from rag.chunker import chunk_documents
+from rag.embedder import embed_texts
 from rag.loader import load_documents
+from rag.store import connect, count, ensure_collection, upsert_chunks
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +28,7 @@ def main() -> None:
         level=logging.DEBUG if args.verbose else logging.INFO,
         format="%(levelname)s %(name)s: %(message)s",
     )
+    logging.getLogger("httpx").setLevel(logging.WARNING)
     docs = load_documents(args.path)
     for doc in docs:
         print(f"{doc.name:<24} {len(doc.text):>6}")
@@ -43,7 +47,16 @@ def main() -> None:
             )
             print(f"  {chunk.text[:120]}...")
             print(f"  ...{chunk.text[-80:]}")
-    logger.info("ready for embedding")
+    vectors = asyncio.run(embed_texts([c.text for c in chunks]))
+    logger.info("embedded %d chunks", len(vectors))
+    client = connect()
+    try:
+        collection = ensure_collection(client)
+        upsert_chunks(collection, chunks, vectors)
+        print(f"{'in weaviate':<24} {count(collection):>6} objects")
+    finally:
+        client.close()
+    logger.info("ready for retrieval")
 
 
 if __name__ == "__main__":
