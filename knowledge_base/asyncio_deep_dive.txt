@@ -1,0 +1,30 @@
+asyncio deep dive
+
+The event loop is the core of asyncio. It schedules callbacks, runs coroutines, and handles IO.
+You normally start it with asyncio.run(main()), which creates a loop, runs the coroutine, and closes the loop.
+
+Coroutines are declared with async def. Calling one returns a coroutine object; nothing runs until it is awaited or wrapped in a Task.
+A Task wraps a coroutine and schedules it on the loop immediately. Create tasks with asyncio.create_task(coro).
+
+await suspends the current coroutine until the awaited thing finishes, letting the loop run other tasks meanwhile.
+Only awaitables can be awaited: coroutines, Tasks, and Futures.
+
+asyncio.gather(*aws) runs several awaitables concurrently and returns their results in order.
+If one raises, gather raises that exception; pass return_exceptions=True to collect exceptions as values instead.
+
+asyncio.wait_for(aw, timeout) cancels the awaitable if it exceeds the timeout and raises TimeoutError.
+asyncio.timeout(seconds) (3.11+) is a context manager alternative.
+
+Semaphores limit concurrency. Create asyncio.Semaphore(10) and wrap the critical section in async with sem.
+This is how you cap the number of simultaneous HTTP requests.
+
+Blocking code must never run directly in a coroutine. Use await loop.run_in_executor(None, func) or asyncio.to_thread(func) to move it to a thread.
+CPU-heavy work should go to a ProcessPoolExecutor instead.
+
+Cancellation: task.cancel() raises CancelledError inside the task at its next await. Always re-raise CancelledError after cleanup.
+asyncio.shield protects an awaitable from cancellation of the outer task.
+
+Queues: asyncio.Queue is the standard producer-consumer primitive. Producers put, consumers get, and queue.join waits until every item was marked done with task_done.
+
+Common mistakes: forgetting await, calling time.sleep, creating a ClientSession per request, and ignoring the result of create_task so the task gets garbage collected.
+Keep a reference to every task you create.

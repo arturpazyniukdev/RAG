@@ -1,0 +1,26 @@
+aiohttp server
+
+aiohttp.web is a lightweight async web framework.
+Create an Application, add routes, and run it with web.run_app(app, port=8080).
+
+A handler is an async function taking a Request and returning a Response.
+Return web.json_response(data) for JSON or web.Response(text="ok") for plain text.
+
+Routes: app.add_routes([web.get("/", index), web.post("/items", create_item)]).
+Path parameters use braces: web.get("/items/{item_id}", get_item) and request.match_info["item_id"].
+
+Read a JSON body with await request.json(). Read query params from request.query.
+Validate input and return web.HTTPBadRequest(reason="...") for bad data.
+
+Middleware wraps every request. Declare with @web.middleware and an async function taking (request, handler).
+Use it for logging, auth, and error handling.
+
+Startup and cleanup: app.on_startup.append(init_db) and app.on_cleanup.append(close_db).
+Store shared objects like database pools in app["db"] so handlers reach them through request.app["db"].
+
+Static files: app.router.add_static("/static/", path="static").
+WebSockets: web.WebSocketResponse, await ws.prepare(request), then iterate async for msg in ws.
+
+Testing: aiohttp.test_utils provides TestClient and TestServer for in-process requests without a real port.
+
+Deployment: run behind nginx, enable access logs, set client_max_size to limit upload size, and use gunicorn with the aiohttp worker class for multiple processes.
