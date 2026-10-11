@@ -9,7 +9,7 @@ from rag.embedder import embed_texts
 from rag.generator import NO_CONTEXT, generate
 from rag.loader import load_documents
 from rag.retriever import Hit, search
-from rag.store import connect, count, ensure_collection, upsert_chunks
+from rag.store import connect, count, drop_collection, ensure_collection, upsert_chunks
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +24,7 @@ def parse_args() -> argparse.Namespace:
     index.add_argument("--chunk-size", type=int, default=80, help="words per chunk")
     index.add_argument("--overlap", type=int, default=20, help="words shared by neighbours")
     index.add_argument("--examples", type=int, default=3, help="chunks to print")
+    index.add_argument("--reset", action="store_true", help="drop collection before upload")
 
     query = sub.add_parser("query", help="semantic search")
     query.add_argument("question")
@@ -32,8 +33,13 @@ def parse_args() -> argparse.Namespace:
     ask = sub.add_parser("ask", help="retrieve context, then answer with LLM")
     ask.add_argument("question")
     ask.add_argument("--top-k", type=int, default=3)
-    ask.add_argument("--max-distance", type=float, default=0.45, help="drop farther hits")
+    ask.add_argument("--max-distance", type=float, default=0.40, help="drop farther hits")
     ask.add_argument("--no-rag", action="store_true", help="answer without retrieval")
+
+    ev = sub.add_parser("eval", help="check retrieval against a question set")
+    ev.add_argument("--file", type=Path, default=Path("eval/questions.txt"))
+    ev.add_argument("--top-k", type=int, default=3)
+    ev.add_argument("--max-distance", type=float, default=0.40)
     return parser.parse_args()
 
 
@@ -61,6 +67,8 @@ def run_index(args: argparse.Namespace) -> None:
     logger.info("embedded %d chunks", len(vectors))
     client = connect()
     try:
+        if args.reset:
+            drop_collection(client)
         collection = ensure_collection(client)
         upsert_chunks(collection, chunks, vectors)
         print(f"{'in weaviate':<24} {count(collection):>6} objects")
@@ -101,6 +109,23 @@ def run_ask(args: argparse.Namespace) -> None:
         print(f"  {hit.distance:.3f}  {hit.chunk_id:<6} {hit.source_name}")
 
 
+def run_eval(args: argparse.Namespace) -> None:
+    lines = [line for line in args.file.read_text().splitlines() if line.strip()]
+    correct = 0
+    for line in lines:
+        label, question = line.split("|", 1)
+        hits = retrieve(question, args.top_k)
+        kept = [h for h in hits if h.distance <= args.max_distance]
+        ok = bool(kept) == (label == "answer")
+        correct += ok
+        best = hits[0].distance if hits else float("nan")
+        print(
+            f"{'OK  ' if ok else 'MISS'} {label:<6} {best:.3f} {len(kept)}/{len(hits)} {question}"
+        )
+        print("       " + "  ".join(f"{h.chunk_id}:{h.distance:.3f}" for h in hits))
+    print(f"{correct}/{len(lines)} as expected")
+
+
 def main() -> None:
     args = parse_args()
     logging.basicConfig(
@@ -109,7 +134,7 @@ def main() -> None:
     )
     for name in ("httpx", "httpx2"):
         logging.getLogger(name).setLevel(logging.WARNING)
-    {"index": run_index, "query": run_query, "ask": run_ask}[args.command](args)
+    {"index": run_index, "query": run_query, "ask": run_ask, "eval": run_eval}[args.command](args)
 
 
 if __name__ == "__main__":

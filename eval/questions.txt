@@ -1,0 +1,13 @@
+answer|when should I create aiohttp ClientSession?
+answer|what does frozen=True do in a dataclass?
+answer|why use logger.info with %s instead of f-strings?
+answer|what are the steps of a RAG pipeline?
+answer|how big are embedding vectors usually?
+answer|how does asyncio.wait_for handle a timeout?
+answer|what should I do with blocking code inside a coroutine?
+refuse|what is the capital of France?
+refuse|how do I add subcommands in argparse?
+refuse|what is the difference between asyncio.gather and asyncio.wait?
+refuse|how do I configure nginx as a reverse proxy?
+refuse|what is the best pizza topping?
+refuse|how do I write a pytest fixture?

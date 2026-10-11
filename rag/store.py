@@ -48,3 +48,8 @@ def upsert_chunks(collection: Collection, chunks: list[Chunk], vectors: list[lis
 
 def count(collection: Collection) -> int:
     return collection.aggregate.over_all(total_count=True).total_count
+
+
+def drop_collection(client: weaviate.WeaviateClient) -> None:
+    client.collections.delete(COLLECTION)
+    logger.info("dropped collection %s", COLLECTION)
